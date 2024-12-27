@@ -106,7 +106,7 @@ postAddProduct: function(req, res, next) {
       const productNameLower = productname.toLowerCase();
       if (productNameLower.includes('iphone')) {
           detectedCategory = 'iphone';
-      } else if (productNameLower.includes('macbook')) {
+      } else if (productNameLower.includes('Macbook')) {
           detectedCategory = 'macbook';
       } else if (productNameLower.includes('watch') || productNameLower.includes('apple watch')) {
           detectedCategory = 'applewatch';

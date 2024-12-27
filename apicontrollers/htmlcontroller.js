@@ -13,10 +13,15 @@ module.exports = function(app) {
 
     ProductModel.find()
       .then(products => {
+        console.log("Tất cả sản phẩm:", products.map(p => ({name: p.productname, category: p.category})));
         var dataiPhone = products.filter(i => i.category == "iPhone");
-        var dataMacbook = products.filter(i => i.category == "Macbook");
-        var dataAppleWatch = products.filter(i => i.category == "AppleWatch");
-        var dataAirpods = products.filter(i => i.category == "AirPods");
+        var dataMacbook = products.filter(i => i.category.toLowerCase().replace(/\s/g, '') == "macbook");
+        var dataAppleWatch = products.filter(i => i.category.toLowerCase().replace(/\s/g, '') == "applewatch");
+        var dataAirpods = products.filter(i => i.category == "airpods");
+        console.log("iPhone:", dataiPhone.length);
+        console.log("Macbook:", dataMacbook.length);
+        console.log("Apple Watch:", dataAppleWatch.length);
+        console.log("Airpods:", dataAirpods.length);
         res.render("homepage", {
           listproducts: dataiPhone,
           listmacbooks: dataMacbook,
@@ -64,7 +69,7 @@ module.exports = function(app) {
     req.session.isManager = false;
     ProductModel.find()
       .then(products => {
-        var data = products.filter(i => i.category == "Macbook");
+        var data = products.filter(i => i.category.toLowerCase() == "macbook");
         res.render("product/page-product", {
           kind: 'macbook',
           listproducts: data
@@ -80,7 +85,7 @@ module.exports = function(app) {
     req.session.isManager = false;
     ProductModel.find()
       .then(products => {
-        var data = products.filter(i => i.category == "AppleWatch");
+        var data = products.filter(i => i.category.toLowerCase().replace(/\s/g, '') == "applewatch");
         res.render("product/page-product", {
           kind: 'applewatch',
           listproducts: data
@@ -96,7 +101,7 @@ module.exports = function(app) {
     req.session.isManager = false;
     ProductModel.find()
       .then(products => {
-        var data = products.filter(i => i.category == "AirPods");
+        var data = products.filter(i => i.category.toLowerCase().replace(/\s/g, '') == "airpods");
         res.render("product/page-product", {
           kind: 'airpods',
           listproducts: data
@@ -112,7 +117,7 @@ module.exports = function(app) {
     req.session.isManager = false;
     ProductModel.find()
       .then(products => {
-        var data = products.filter(i => i.category == "AirPods");
+        var data = products.filter(i => i.category.toLowerCase().replace(/\s/g, '') == "airpods");
         res.render("product/page-product", {
           kind: 'airpods',
           listproducts: data
@@ -140,6 +145,3 @@ module.exports = function(app) {
       });
   });
 };
-
-
-
