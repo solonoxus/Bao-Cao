@@ -226,7 +226,7 @@ module.exports = {
     var count = 0;
     NewProductModel.find()
       .then((products) => {
-        var data = products.filter((i) => i.category == "Macbook");
+        var data = products.filter((i) => i.category.toLowerCase().replace(/\s/g, '') == "macbook");
         console.log(data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
@@ -247,7 +247,7 @@ module.exports = {
     var count = 0;
     NewProductModel.find()
       .then((products) => {
-        var data = products.filter((i) => i.category == "AppleWatch");
+        var data = products.filter((i) => i.category.toLowerCase().replace(/\s/g, '') == "applewatch");
         console.log(data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
