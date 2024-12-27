@@ -302,81 +302,130 @@ module.exports = {
   },
 
   //Update Cart
-  postUpdateCart: async function(req, res, next) {
+  postUpdateCart: async function (req, res, next) {
     try {
-        var { productQuantity, productId } = req.body;
-        var newQuantityArr = [];
-        var productIdArr = [];
+      var { productQuantity, productId } = req.body;
+      var newQuantityArr = [];
+      var productIdArr = [];
 
-        if (typeof productId == 'string') {
-            newQuantityArr = productQuantity.split(",");
-            productIdArr = productId.split(",");
-        } else {
-            newQuantityArr = productQuantity;
-            productIdArr = productId;
+      if (typeof productId == "string") {
+        newQuantityArr = productQuantity.split(",");
+        productIdArr = productId.split(",");
+      } else {
+        newQuantityArr = productQuantity;
+        productIdArr = productId;
+      }
+
+      const user = await UserModel.findById(req.session.user._id);
+      const products = await ProductModel.find();
+
+      for (let i = 0; i < productIdArr.length; i++) {
+        const product = products.find(
+          (p) => p._id.toString() === productIdArr[i].toString()
+        );
+        if (product) {
+          const currentQuantityInCart =
+            user.cart.items.find(
+              (item) => item.productId.toString() === productIdArr[i].toString()
+            )?.quantity || 0;
+          const totalQuantity =
+            currentQuantityInCart + parseInt(newQuantityArr[i]);
+
+          if (totalQuantity > product.quantity) {
+            req.flash(
+              "errorMessage",
+              `Số lượng sản phẩm ${product.productname} không đủ! Chỉ còn ${product.quantity} sản phẩm.`
+            );
+            return res.redirect("/cart");
+          }
         }
+      }
 
-        const user = await UserModel.findById(req.session.user._id);
-        const products = await ProductModel.find();
+      const newUpdateItems = productIdArr.map((id, index) => ({
+        ID: id,
+        Quantity: newQuantityArr[index],
+      }));
 
-        for (let i = 0; i < productIdArr.length; i++) {
-            const product = products.find(p => p._id.toString() === productIdArr[i].toString());
-            if (product) {
-                const currentQuantityInCart = user.cart.items.find(item => item.productId.toString() === productIdArr[i].toString())?.quantity || 0;
-                const totalQuantity = currentQuantityInCart + parseInt(newQuantityArr[i]);
-
-                if (totalQuantity > product.quantity) {
-                    req.flash('errorMessage', `Số lượng sản phẩm ${product.productname} không đủ! Chỉ còn ${product.quantity} sản phẩm.`);
-                    return res.redirect("/cart");
-                }
-            }
-        }
-
-        const newUpdateItems = productIdArr.map((id, index) => ({
-            ID: id,
-            Quantity: newQuantityArr[index],
-        }));
-
-        await user.updatedCart(newUpdateItems);
-        return res.redirect("/cart");
+      await user.updatedCart(newUpdateItems);
+      return res.redirect("/cart");
     } catch (err) {
-        console.log(err);
-        req.flash('errorMessage', "Đã xảy ra lỗi khi cập nhật giỏ hàng.");
-        return res.redirect("/cart");
+      console.log(err);
+      req.flash("errorMessage", "Đã xảy ra lỗi khi cập nhật giỏ hàng.");
+      return res.redirect("/cart");
     }
-},
+  },
+  postCheckout: async function (req, res) {
+    try {
+      const { name, mobilenumber, address } = req.body;
 
-postCart: async function(req, res, next) {
-  try {
+      // Lấy user hiện tại
+      const user = await UserModel.findById(req.session.user._id);
+      if (!user) {
+        req.flash("error", "Không tìm thấy thông tin người dùng");
+        return res.redirect("/cart");
+      }
+
+      // Thực hiện checkout
+      const result = await user.CheckOut(name, mobilenumber, address);
+
+      if (result) {
+        user.productNewOrder.isCompleted = false;
+  await user.save();
+        // Cập nhật session
+        const updatedUser = await UserModel.findById(user._id);
+        req.session.user = updatedUser;
+
+        req.flash("success", "Đặt hàng thành công!");
+        return res.redirect("/");
+      } else {
+        req.flash("error", "Có lỗi xảy ra khi đặt hàng");
+        return res.redirect("/cart");
+      }
+    } catch (err) {
+      console.error(err);
+      req.flash("error", "Có lỗi xảy ra");
+      res.redirect("/cart");
+    }
+  },
+
+  postCart: async function (req, res, next) {
+    try {
       const productId = req.body.productId;
       var newQuantity = parseInt(req.body.productNumber);
 
       const product = await ProductModel.findById(productId);
       if (!product) {
-          req.flash('errorMessage', "Sản phẩm không tồn tại.");
-          return res.redirect("/");
+        req.flash("errorMessage", "Sản phẩm không tồn tại.");
+        return res.redirect("/");
       }
 
       const user = await UserModel.findById(req.session.user._id);
-      const currentQuantityInCart = user.cart.items.find(item => item.productId.toString() === productId.toString())?.quantity || 0;
+      const currentQuantityInCart =
+        user.cart.items.find(
+          (item) => item.productId.toString() === productId.toString()
+        )?.quantity || 0;
       const totalQuantity = currentQuantityInCart + newQuantity;
 
       if (totalQuantity > product.quantity) {
-          req.flash('errorMessage', `Số lượng sản phẩm ${product.productname} không đủ! Chỉ còn ${product.quantity} sản phẩm.`);
-          return res.redirect("/product/" + productId);
+        req.flash(
+          "errorMessage",
+          `Số lượng sản phẩm ${product.productname} không đủ! Chỉ còn ${product.quantity} sản phẩm.`
+        );
+        return res.redirect("/product/" + productId);
       }
 
       await user.addToCart(product, newQuantity);
       return res.redirect("/");
-  } catch (err) {
+    } catch (err) {
       console.log(err);
-      req.flash('errorMessage', "Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng.");
+      req.flash(
+        "errorMessage",
+        "Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng."
+      );
       return res.redirect("/");
-  }
-}
-
-
-
+    }
+  },
+  
 };
 
 //Update cart Post

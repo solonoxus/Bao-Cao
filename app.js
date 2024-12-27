@@ -46,7 +46,29 @@ mongoose.connect(
   MONGODB_URI,
   { useNewUrlParser: true}
 )
+// Middleware kiểm tra user session
+app.use((req, res, next) => {
+  if (!req.session) {
+    return next();
+  }
 
+  if (req.session.user) {
+    UserModel.findById(req.session.user._id)
+      .then(user => {
+        if (!user) {
+          return next();
+        }
+        req.user = user;
+        next();
+      })
+      .catch(err => {
+        console.log(err);
+        next();
+      });
+  } else {
+    next();
+  }
+});
 //App use
 app.use(logger('dev'));
 app.use(express.json());

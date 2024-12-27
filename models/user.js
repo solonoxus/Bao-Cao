@@ -5,35 +5,35 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   username: {
     type: String,
-    require: true
+    require: true,
   },
   password: {
     type: String,
-    require: true
+    require: true,
   },
   email: {
     type: String,
-    require: true
+    require: true,
   },
   age: {
     type: Number,
-    require: true
+    require: true,
   },
   phone: {
     type: String,
-    require: true
+    require: true,
   },
   address: {
     type: String,
-    require: true
+    require: true,
   },
   role: {
     type: String,
-    default: "customer"
+    default: "customer",
   },
   created: {
     type: String,
-    default: Date.now
+    default: Date.now,
   },
   cart: {
     items: [
@@ -41,42 +41,46 @@ const userSchema = new Schema({
         productId: {
           type: Schema.Types.ObjectId,
           ref: "newproduct",
-          required: true
+          required: true,
         },
-        quantity: { type: Number }
-      }
+        quantity: { type: Number },
+      },
     ],
     sum: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
-  productNewOrder:{
-    order:[],
-    fullname:{
+  productNewOrder: {
+    order: [],
+    fullname: {
       type: String,
     },
-    mobilenumber:{
+    mobilenumber: {
       type: String,
     },
-    address:{
+    address: {
       type: String,
     },
-    createdOrder:{
+    createdOrder: {
       type: String,
+    },
+    isCompleted: {
+      type: Boolean,
+      default: false,
     },
   },
 });
 
 //Add to Cart
-userSchema.methods.addToCart = function(product, newQuantity) {
-  const cartProductIndex = this.cart.items.findIndex(cp => {
+userSchema.methods.addToCart = function (product, newQuantity) {
+  const cartProductIndex = this.cart.items.findIndex((cp) => {
     return cp.productId.toString() === product._id.toString();
   });
 
   const updatedCartItems = [...this.cart.items];
- // console.log("TCL: userSchema.methods.addToCart -> updatedCartItems", updatedCartItems)
- // console.log("TCL: userSchema.methods.addToCart -> this.cart.items", this.cart.items)
+  // console.log("TCL: userSchema.methods.addToCart -> updatedCartItems", updatedCartItems)
+  // console.log("TCL: userSchema.methods.addToCart -> this.cart.items", this.cart.items)
   var quantityProduct = newQuantity;
   if (cartProductIndex >= 0) {
     newQuantity =
@@ -86,7 +90,7 @@ userSchema.methods.addToCart = function(product, newQuantity) {
   } else {
     updatedCartItems.push({
       productId: product._id,
-      quantity: newQuantity
+      quantity: newQuantity,
     });
   }
   var priceAddQuantityProduct = product.price * quantityProduct;
@@ -98,7 +102,7 @@ userSchema.methods.addToCart = function(product, newQuantity) {
   );
   const updatedCart = {
     items: updatedCartItems,
-    sum: this.cart.sum
+    sum: this.cart.sum,
   };
   this.cart = updatedCart;
   console.log("TCL: cart =>", this.cart);
@@ -106,7 +110,7 @@ userSchema.methods.addToCart = function(product, newQuantity) {
 };
 
 //Remove
-userSchema.methods.removeProductCart = function(product, productDetail) {
+userSchema.methods.removeProductCart = function (product, productDetail) {
   var listProductCart = this.cart.items;
   var sum = this.cart.sum;
   for (var i = 0; i < listProductCart.length; i++) {
@@ -119,7 +123,7 @@ userSchema.methods.removeProductCart = function(product, productDetail) {
   }
   const updatedCart = {
     items: listProductCart,
-    sum: sum
+    sum: sum,
   };
   this.cart = updatedCart;
   console.log("TCL: cart =>", this.cart);
@@ -127,73 +131,89 @@ userSchema.methods.removeProductCart = function(product, productDetail) {
 };
 
 //Update
-userSchema.methods.updatedCart = function(newUpdateCart){
-  var listUpdateProductCart = [...this.cart.items]
-  var newSum=0;
+userSchema.methods.updatedCart = function (newUpdateCart) {
+  var listUpdateProductCart = [...this.cart.items];
+  var newSum = 0;
   ProductModel.find()
-  .then(product=>{
-    listUpdateProductCart.forEach((item,index)=>{
-      product.forEach(items=>{
-        if (items._id.toString() == listUpdateProductCart[index].productId.toString()) {
-          for(var i =0; i<newUpdateCart.length; i++){
-            if(newUpdateCart[i].ID.toString() == listUpdateProductCart[index].productId.toString()){
-              listUpdateProductCart[index].quantity = newUpdateCart[i].Quantity;
-            
-              newSum = newSum + parseFloat(items.price) * parseFloat( newUpdateCart[i].Quantity);
+    .then((product) => {
+      listUpdateProductCart.forEach((item, index) => {
+        product.forEach((items) => {
+          if (
+            items._id.toString() ==
+            listUpdateProductCart[index].productId.toString()
+          ) {
+            for (var i = 0; i < newUpdateCart.length; i++) {
+              if (
+                newUpdateCart[i].ID.toString() ==
+                listUpdateProductCart[index].productId.toString()
+              ) {
+                listUpdateProductCart[index].quantity =
+                  newUpdateCart[i].Quantity;
+
+                newSum =
+                  newSum +
+                  parseFloat(items.price) *
+                    parseFloat(newUpdateCart[i].Quantity);
+              }
             }
           }
-        }
-      })
+        });
+      });
     })
-  })
-  .then(result=>{
-    const updatedCart = {
-      items: listUpdateProductCart,
-      sum: newSum
-    };
-    this.cart = updatedCart;
-    console.log("JSON.parse(JSON.stringify(this.cart))", JSON.parse(JSON.stringify(this.cart)))
-    console.log(" JSON.stringify(this.cart)", JSON.stringify(this.cart))
-    console.log("TCL: cart =>", this.cart);
-    return this.save();
-  })
- 
-}
-
+    .then((result) => {
+      const updatedCart = {
+        items: listUpdateProductCart,
+        sum: newSum,
+      };
+      this.cart = updatedCart;
+      console.log(
+        "JSON.parse(JSON.stringify(this.cart))",
+        JSON.parse(JSON.stringify(this.cart))
+      );
+      console.log(" JSON.stringify(this.cart)", JSON.stringify(this.cart));
+      console.log("TCL: cart =>", this.cart);
+      return this.save();
+    });
+};
 
 //Order
-userSchema.methods.CheckOut = function(name,mobilenumber,address){
-  var listUpdateProductCart = [...this.cart.items]
-  var orderProduct = this.productNewOrder
+userSchema.methods.CheckOut = function (name, mobilenumber, address) {
+  var listUpdateProductCart = [...this.cart.items];
+  var orderProduct = this.productNewOrder;
   let itemsCart = JSON.parse(JSON.stringify(this.cart));
   const today = new Date();
   var date_format = new Date(today).toDateString("yyyy-MM-dd");
   const created = date_format;
-  console.log("TCL: userSchema.methods.CheckOut -> this.productNewOrder.order", this.productNewOrder.order)
-  ProductModel.find()
-  .then(product=>{
-    listUpdateProductCart.forEach((item,index)=>{
-      product.forEach(items=>{
-        if (items._id.toString() == listUpdateProductCart[index].productId.toString()) {
-          items.quantity = items.quantity - listUpdateProductCart[index].quantity  
-       //   return items.save();  
+  console.log(
+    "TCL: userSchema.methods.CheckOut -> this.productNewOrder.order",
+    this.productNewOrder.order
+  );
+  ProductModel.find().then((product) => {
+    listUpdateProductCart.forEach((item, index) => {
+      product.forEach((items) => {
+        if (
+          items._id.toString() ==
+          listUpdateProductCart[index].productId.toString()
+        ) {
+          items.quantity =
+            items.quantity - listUpdateProductCart[index].quantity;
+          //   return items.save();
         }
-      })  
-    })
-  })
+      });
+    });
+  });
   orderProduct.order.unshift(itemsCart);
-  orderProduct.createdOrder = created
+  orderProduct.createdOrder = created;
   orderProduct.fullname = name;
   orderProduct.mobilenumber = mobilenumber;
   orderProduct.address = address;
-  console.log("TCL: userSchema.methods.CheckOut -> orderProduct", orderProduct)
+  console.log("TCL: userSchema.methods.CheckOut -> orderProduct", orderProduct);
   this.cart = {
     items: [],
-    sum: 0
+    sum: 0,
   };
   return this.save();
-}
-
+};
 const userMongoose = mongoose.model("user", userSchema);
 
 //Module.exports

@@ -250,7 +250,7 @@
                                                     <th>Address</th>
                                                     <th>Price</th>
                                                     <th>Created Order</th>
-                                                    <th>Status</th>
+                                                    
                                                 </tr>
                                             </thead>   
                                             <% var k=0 %>
@@ -270,9 +270,7 @@
                                                     <td>  <span class="address">    <%= orderProduct.productNewOrder.address %></span> </td>
                                                     <td> <span class="quantity">   <%= js[0].sum%></span> </td>
                                                     <td><span class="count">    <%= orderProduct.productNewOrder.createdOrder %></span></td>
-                                                    <td>
-                                                        <span class="badge badge-complete">Complete</span>
-                                                    </td>
+                                                   
                                                 </tr>
                                               
                                             </tbody>
@@ -625,5 +623,6 @@
             // Bar Chart #flotBarChart End
         });
     </script>
+   
 </body>
 </html>

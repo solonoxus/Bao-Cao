@@ -3,16 +3,16 @@ const bodyParser = require("body-parser");
 //Model
 const UserModel = require("../models/user");
 const NewProductModel = require("../models/newproduct");
-
+const ProductModel = require("../models/newproduct");
 module.exports = {
   //Admin
-  getIndex: function(req, res, next) {
+  getIndex: function (req, res, next) {
     // Đảm bảo trả về một Promise
     return Promise.resolve()
       .then(() => {
         // Logic xử lý của bạn ở đây
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         res.status(500).json({ error: err.message });
       });
@@ -22,7 +22,6 @@ module.exports = {
     var count = 0;
     UserModel.find({
       "productNewOrder.order": { $exists: true, $ne: [] },
-      "productNewOrder.isCompleted": { $ne: true }, // Chỉ lấy đơn hàng chưa hoàn thành
     })
       .then((user) => {
         var data = user.filter((i) => i.productNewOrder.order.length > 0);
@@ -46,45 +45,49 @@ module.exports = {
         });
       });
   },
-
   //Manager Users
-  getManagerUsers: function(req, res, next) {
+  getManagerUsers: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
-    UserModel.find().then(user => {
-      var data = user.filter(i => i.productNewOrder.order.length > 0);
-      res
-        .render("admin/list-user", {
+
+    UserModel.find()
+      .then((user) => {
+        var data = user.filter((i) => i.productNewOrder.order.length > 0);
+        return res.render("admin/list-user", {
           path: "/admin/list-user",
           count: count,
-          listusers: user
-        })
-        .catch(err => {
-          console.log(err);
+          listusers: user,
         });
-    });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).render("error", {
+          error: err,
+          message: "Đã xảy ra lỗi khi tải dữ liệu người dùng",
+        });
+      });
   },
 
   //Update USer
-  getUpdate: function(req, res, next) {
+  getUpdate: function (req, res, next) {
     const userID = req.params._id;
     console.log("TCL: ", userID);
     UserModel.findById(userID)
-      .then(function(user) {
+      .then(function (user) {
         if (!user) {
           return res.redicter("/adminTin");
         }
         res.render("admin/updateusers", {
           user: user,
-          alo: console.log(user.username)
+          alo: console.log(user.username),
         });
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
   },
 
-  postUpdateUser: function(req, res, next) {
+  postUpdateUser: function (req, res, next) {
     const userID = req.body._id;
     const username = req.body.username;
     const age = req.body.age;
@@ -96,7 +99,7 @@ module.exports = {
     console.log("TCL: ", req.body._id);
     console.log("TCL: ", username);
     UserModel.findById(userID)
-      .then(function(user) {
+      .then(function (user) {
         user.username = username;
         user.age = age;
         user.phone = phone;
@@ -106,212 +109,214 @@ module.exports = {
         user.created = created;
         return user.save();
       })
-      .then(function(result) {
+      .then(function (result) {
         console.log("Complete Updated Completed user!");
-        res.redirect("/adminTin")
+        res.redirect("/adminTin");
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
   },
 
   //Remove
-  getRemoveUser: function(req, res, next) {
+  getRemoveUser: function (req, res, next) {
     const userID = req.params._id;
     console.log("ALOALO: " + userID);
     UserModel.deleteOne({
-      _id: userID
+      _id: userID,
     })
-      .then(function(result) {
+      .then(function (result) {
         console.log("Complete Delete Completed user!");
         res.redirect("/adminTin/managerusers");
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
   },
 
   /*List Order*/
-  getListOrder: function(req, res, next) {
+  getListOrder: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     UserModel.find()
-      .then(user => {
-        var data = user.filter(i => i.productNewOrder.order.length > 0);
+      .then((user) => {
+        var data = user.filter((i) => i.productNewOrder.order.length > 0);
         //Filter Order Year
         // var data2 = data.filter(i=>i.productNewOrder.createdOrder.indexOf('2018')>0)
         //console.log("TCL: data2", data2)
         res.render("admin/list-order", {
           path: "/admin/list-order",
           count: count,
-          listorder: data
+          listorder: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
-  postlistOrder: function(req, res, next) {
+  postlistOrder: function (req, res, next) {
     req.session.isManager = false;
-    var {year} = req.body;
-    console.log("TCL: year", year)
-    
+    var { year } = req.body;
+    console.log("TCL: year", year);
+
     var count = 0;
     UserModel.find()
-      .then(user => {
-        var data = user.filter(i => i.productNewOrder.order.length > 0);
+      .then((user) => {
+        var data = user.filter((i) => i.productNewOrder.order.length > 0);
         //Filter Order Year
-         var data2 = data.filter(i=>i.productNewOrder.createdOrder.indexOf(year)>0)
+        var data2 = data.filter(
+          (i) => i.productNewOrder.createdOrder.indexOf(year) > 0
+        );
         //console.log("TCL: data2", data2)
         res.render("admin/list-order", {
           path: "/admin/list-order",
           yearorder: year,
           count: count,
-          listorder: data2
+          listorder: data2,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
   /* New DB*/
-  getListNewProduct: function(req, res, next) {
+  getListNewProduct: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     NewProductModel.find()
-      .then(products => {
+      .then((products) => {
         res.render("admin/list-product", {
           path: "/admin/list-product",
           count: count,
-          kind: 'allproducts',
-          listproducts: products
+          kind: "allproducts",
+          listproducts: products,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
   //List iPhone
-  getListiPhone: function(req, res, next) {
+  getListiPhone: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     NewProductModel.find()
-      .then(products => {
-        var data = products.filter(i => i.category == "iPhone");
+      .then((products) => {
+        var data = products.filter((i) => i.category == "iPhone");
         console.log(data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
           count: count,
-          kind: 'iphone',
-          listproducts: data
+          kind: "iphone",
+          listproducts: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
   //-------------------------------------------------------------------
   //List Macbook
-  getListMacbook: function(req, res, next) {
+  getListMacbook: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     NewProductModel.find()
-      .then(products => {
-        var data = products.filter(i => i.category == "Macbook");
+      .then((products) => {
+        var data = products.filter((i) => i.category == "Macbook");
         console.log(data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
           count: count,
-          kind: 'macbook',
-          listproducts: data
+          kind: "macbook",
+          listproducts: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
   //-------------------------------------------------------------------
   //List Apple Watch
-  getListAppleWatch: function(req, res, next) {
+  getListAppleWatch: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     NewProductModel.find()
-      .then(products => {
-        var data = products.filter(i => i.category == "AppleWatch");
+      .then((products) => {
+        var data = products.filter((i) => i.category == "AppleWatch");
         console.log(data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
           count: count,
-          kind: 'applewatch',
-          listproducts: data
+          kind: "applewatch",
+          listproducts: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
   //-------------------------------------------------------------------
   //List Airpod
-  getListAirpod: function(req, res, next) {
+  getListAirpod: function (req, res, next) {
     req.session.isManager = false;
     var count = 0;
     NewProductModel.find()
-      .then(products => {
-        var data = products.filter(i => i.category == "AirPods");
-        console.log('alo ',data);
+      .then((products) => {
+        var data = products.filter((i) => i.category == "AirPods");
+        console.log("alo ", data);
         res.render("admin/list-product", {
           path: "/admin/list-product",
           count: count,
-          kind: 'airpods',
-          listproducts: data
+          kind: "airpods",
+          listproducts: data,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   },
 
-  getRemoveNewProduct: function(req, res, next) {
+  getRemoveNewProduct: function (req, res, next) {
     const newproductID = req.params._id;
     console.log("Product ID: " + newproductID);
     req.session.isManager = false;
     NewProductModel.deleteOne({
-      _id: newproductID
+      _id: newproductID,
     })
-      .then(function(result) {
+      .then(function (result) {
         console.log("Complete Delete Product!");
-        res.redirect('/adminTin/managerproducts')
+        res.redirect("/adminTin/managerproducts");
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
   },
 
-  getUpdateNewProduct: function(req, res, next) {
+  getUpdateNewProduct: function (req, res, next) {
     const newproductID = req.params._id;
     console.log("TCL: ", newproductID);
     NewProductModel.findById(newproductID)
-      .then(function(newproduct) {
+      .then(function (newproduct) {
         if (!newproduct) {
           return res.redicter("/adminTin");
         }
         res.render("admin/update-product", {
           airpods: newproduct,
-          alo: console.log(newproduct.productname)
+          alo: console.log(newproduct.productname),
         });
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
   },
 
-  postUpdateNewProduct: function(req, res, next) {
+  postUpdateNewProduct: function (req, res, next) {
     const newproductID = req.body._id;
     const newproductname = req.body.productname;
     const imagePath = req.body.imagePath;
@@ -322,7 +327,7 @@ module.exports = {
     const created = req.body.created;
     console.log("TCL: ", newproductID);
     NewProductModel.findById(newproductID)
-      .then(function(newproduct) {
+      .then(function (newproduct) {
         newproduct.productname = newproductname;
         newproduct.imagePath = imagePath;
         newproduct.description = description;
@@ -332,13 +337,67 @@ module.exports = {
         newproduct.created = created;
         return newproduct.save();
       })
-      .then(function(result) {
+      .then(function (result) {
         console.log("Complete Updated Completed Product!");
         res.redirect("/adminTin/managerproducts");
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("TCL: ", err);
       });
+  },
+  getManagerOrder: function(req, res, next) {
+    UserModel.find({
+      "productNewOrder.order": { $exists: true, $ne: [] }
+    })
+    .then(orders => {
+      res.render("admin/list-order", {
+        listorder: orders,
+        path: "/admin/list-order"
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).render("error", {
+        error: err,
+        message: "Đã xảy ra lỗi khi tải danh sách đơn hàng"
+      });
+    });
+  },
+  completeOrder: async function(req, res, next) {
+    try {
+      const orderId = req.params.orderId;
+       console.log("OrderID received:", orderId);
+      const user = await UserModel.findById(orderId);
+      console.log("User found:", user ? "Yes" : "No");
+  
+      if (!user) {
+        req.flash('error', 'Không tìm thấy đơn hàng');
+        return res.redirect('/adminTin');
+      }
+  
+      // Cập nhật trạng thái đơn hàng
+      user.productNewOrder.isCompleted = true;
+      await user.save();
+  
+      // Cập nhật số lượng sản phẩm
+      const orderItems = user.productNewOrder.order[0].items;
+      for(let item of orderItems) {
+        const product = await ProductModel.findById(item.productId);
+        if(product) {
+          product.quantity -= item.quantity;
+          await product.save();
+          console.log("Order marked as completed");
+        }
+      }
+  
+      req.flash('success', 'Đơn hàng đã được hoàn thành');
+      res.redirect('/adminTin');
+    } catch (err) {
+      console.log(err);
+      console.log("Error in completeOrder:", err);
+      req.flash('error', 'Có lỗi xảy ra');
+      res.redirect('/adminTin'); 
+    }
   }
 
   /*

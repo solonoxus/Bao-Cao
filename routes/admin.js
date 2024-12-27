@@ -6,6 +6,8 @@ const AdminController = require("../apicontrollers/admin");
 
 const isAuthAdmin=require('../middleware/is-auth-admin')
 const isAuth=require('../middleware/is-auth')
+
+
 router.use(cors());
 
 
@@ -53,5 +55,6 @@ router.post(
   "/adminTin/managerproducts/update",isAuthAdmin,
   AdminController.postUpdateNewProduct
 );
+
 
 module.exports = router;

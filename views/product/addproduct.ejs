@@ -5,6 +5,9 @@
     <% if (errorMessageProduct) { %>
     <div class="user-message user-message--error m-b-20"><%= errorMessageProduct %></div>
     <% } %>
+    <% if (successMessageProduct) { %>
+        <div class="user-message user-message--success m-b-20"><%= successMessageProduct %></div>
+        <% } %>
 
     <!-- Title page -->
     <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url(../images/iphone-xr1.jpg);">
@@ -71,10 +74,11 @@
                         </span>
                         <div class="rs1-select2 bor8 bg0 option-category">
                             <select id="menu-category" class="js-select2 menu-category" name="time" onchange="menucategory()">
-                                <option>iPhone</option>
-                                <option>Macbook</option>
-                                <option>AppleWatch</option>
-                                <option>AirPods</option>
+                                <option value="iphone">iPhone</option>
+                                <option value="macbook">MacBook</option>
+                                <option value="applewatch">Apple Watch</option>
+                                <option value="airpods">AirPods</option>
+                                <option value="other">Khác</option>
                             </select>
                             <div class="dropDownSelect2"></div>
                         </div>
