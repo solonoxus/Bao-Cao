@@ -99,11 +99,8 @@
                             <div class="block2">
                                 <div class="block2-pic hov-img0">
                                     <img src="<%= product.imagePath %>" alt="IMG-PRODUCT">
-
-                                    <a  href="#"
-                                    onclick="showdata('<%= product.productname %>', '<%= product.price %>','<%= product.description.length > 100 ? product.description.substring(0, 50) + '...' : product.description %>',
-                                    '<%= product.imagePath %>','<%= product.category %>', '<%= product._id %>')"
-                                        class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1">
+                                    <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04"
+                                        onclick="showdata('<%= product.productname %>', '<%= product.price %>', '<%= product.description %>', '<%= product.imagePath %>', '<%= product.category %>', '<%= product._id %>', <%= product.quantity %>)">
                                         Quick View
                                     </a>
                                 </div>
@@ -113,23 +110,19 @@
                                         <a href="/product/<%= product._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
                                             <%= product.productname %>
                                         </a>
-                                        <a href="/product/<%= product._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-                                            <%= product.description.length > 100 ? product.description.substring(0, 50) + '...' : product.description %>
-                                        </a>
-
                                         <span class="stext-105 cl3">
-                                            $<%=product.price %>
+                                            $<%= product.price %>
+                                        </span>
+                                        <span class="stext-105 cl3 mt-2">
+                                            In stock: <%= product.quantity %>
                                         </span>
                                     </div>
-                                    <div>
-                                        <img src="/images/star.svg" alt="/" />
-                                        <img src="/images/star.svg" alt="/" />
-                                        <img src="/images/star.svg" alt="/" />
-                                        <img src="/images/star.svg" alt="/" />
-                                        <img src="/images/star.svg" alt="/" />
-                                    </div>
+
                                     <div class="block2-txt-child2 flex-r p-t-3">
-                                        
+                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                                            <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                            <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                        </a>
                                     </div>
                                 </div>
                             </div>
