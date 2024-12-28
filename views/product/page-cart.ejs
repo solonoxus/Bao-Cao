@@ -31,12 +31,15 @@
 										<tr class="table_row" >
 											<td class="column-1">
 												<div class="how-itemcart1">
-													<img src="<%= item.productId.imagePath %>" alt="IMG">
+													<img src="<%= item.productId ? item.productId.imagePath : 'default-image.jpg' %>" alt="IMG">
 												</div>
 											</td>
-											<td class="column-2"><%= item.productId.productname %></td>
-											<td class="column-3 num-price" name="priceNumber" id="priceNumber">$<%= item.productId.price %></td>
-
+											<td class="column-2">
+												<%= item.productId ? item.productId.productname : 'Sản phẩm không còn' %>
+											</td>
+											<td class="column-3 num-price" name="priceNumber" id="priceNumber">
+												$<%= item.productId ? item.productId.price : '0' %>
+											</td>
 											<td class="column-4">
 												<div class="wrap-num-product flex-w m-l-auto m-r-0">
 													<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
@@ -49,14 +52,18 @@
 														<i class="fs-16 zmdi zmdi-plus"></i>
 													</div>
 													
-													<input type="hidden" name="productId" id="productId" value="<%= item.productId._id %>">
+													<input type="hidden" name="productId" id="productId" value="<%= item.productId ? item.productId._id : '' %>">
 												</div>
 											</td>
 
-											<td class="column-5 total-prod">$<%= item.quantity * item.productId.price %></td>
+											<td class="column-5 total-prod">$<%= item.productId ? item.quantity * item.productId.price : '0' %></td>
 										</tr>
 										
 									<% }) %>
+								<% } else { %>
+									<tr>
+										<td colspan="5" class="text-center">Giỏ hàng trống</td>
+									</tr>
 								<% } %>
 
 							</table>

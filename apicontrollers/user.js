@@ -234,13 +234,19 @@ module.exports = {
           .populate("cart.items.productId")
           .execPopulate()
           .then((user) => {
-            let products = user.cart.items;
-            console.log(products);
+            // Filter out cart items with null productId
+            let products = user.cart.items.filter(item => item.productId !== null);
+            
+            // Recalculate sum for valid products
+            let sum = products.reduce((total, item) => {
+              return total + (item.productId ? item.quantity * parseFloat(item.productId.price) : 0);
+            }, 0);
+
             res.render("product/page-cart", {
               path: "/cart",
               pageTitle: "Your Cart",
               products: products,
-              sum: user.cart.sum,
+              sum: sum,
               errorMessage: message,
               error: boolError,
             });
