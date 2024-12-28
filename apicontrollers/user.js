@@ -362,38 +362,61 @@ module.exports = {
   },
   postCheckout: async function (req, res) {
     try {
-      const { name, mobilenumber, address } = req.body;
+      const { fullname, mobilenumber, address, selectedProducts } = req.body;
+      const selectedProductIds = JSON.parse(selectedProducts);
 
-      // Lấy user hiện tại
-      const user = await UserModel.findById(req.session.user._id);
-      if (!user) {
-        req.flash("error", "Không tìm thấy thông tin người dùng");
-        return res.redirect("/cart");
+      // Lấy thông tin user và populate cart
+      const user = await UserModel.findById(req.session.user._id)
+        .populate('cart.items.productId');
+
+      // Lọc các sản phẩm được chọn
+      const selectedItems = user.cart.items.filter(item => 
+        selectedProductIds.includes(item.productId._id.toString())
+      );
+
+      // Tính tổng tiền các sản phẩm được chọn
+      const total = selectedItems.reduce((sum, item) => {
+        return sum + (item.productId.price * item.quantity);
+      }, 0);
+
+      // Tạo đơn hàng mới
+      const date_format = new Date().toDateString();
+      user.productNewOrder = {
+        order: selectedItems,
+        fullname: fullname,
+        mobilenumber: mobilenumber,
+        address: address,
+        createdOrder: date_format,
+        isCompleted: false
+      };
+
+      // Cập nhật số lượng sản phẩm trong kho
+      for (const item of selectedItems) {
+        const product = await ProductModel.findById(item.productId._id);
+        product.quantity -= item.quantity;
+        await product.save();
       }
 
-      // Thực hiện checkout
-      const result = await user.CheckOut(name, mobilenumber, address);
+      // Xóa sản phẩm đã đặt khỏi giỏ hàng
+      user.cart.items = user.cart.items.filter(item => 
+        !selectedProductIds.includes(item.productId._id.toString())
+      );
+      
+      // Cập nhật tổng tiền giỏ hàng
+      user.cart.sum -= total;
 
-      if (result) {
-        user.productNewOrder.isCompleted = false;
-  await user.save();
-        // Cập nhật session
-        const updatedUser = await UserModel.findById(user._id);
-        req.session.user = updatedUser;
-
-        req.flash("success", "Đặt hàng thành công!");
-        return res.redirect("/");
-      } else {
-        req.flash("error", "Có lỗi xảy ra khi đặt hàng");
-        return res.redirect("/cart");
-      }
+      await user.save();
+      
+      req.flash('errorMessage', 'Đặt hàng thành công!');
+      req.flash('error', 'false');
+      res.redirect('/cart');
     } catch (err) {
-      console.error(err);
-      req.flash("error", "Có lỗi xảy ra");
-      res.redirect("/cart");
+      console.log(err);
+      req.flash('errorMessage', 'Đã xảy ra lỗi khi đặt hàng.');
+      req.flash('error', 'true');
+      res.redirect('/cart');
     }
   },
-
   postCart: async function (req, res, next) {
     try {
       const productId = req.body.productId;
